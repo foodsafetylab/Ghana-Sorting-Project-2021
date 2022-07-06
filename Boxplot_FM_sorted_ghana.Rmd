@@ -1,0 +1,89 @@
+---
+title: "Ghana boxplots FM"
+author: "Ruben"
+date: "July 13, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/ruben/Desktop/Rstudio")
+
+library(tidyverse)
+library(ggplot2)
+
+library(reshape2)
+library(ggpubr)
+```
+
+```{r}
+texas2 <- read.csv("Ghana_sorted_FM.csv", header = TRUE)
+```
+
+
+```{r}
+#boxplot for farms cleaning system
+
+
+
+FMfarms <- ggplot(data = texas2) + 
+  geom_boxplot(aes(x= Sample_type, y= FM_level_ppm )) + labs(title = "Fumonisin Level of Ghana samples", x = "Sample Type", y = "Fumonisin Level (ppm)") + theme(legend.position = c(0.2, 0.8)) + stat_compare_means(aes(x= Sample_type, y= FM_level_ppm))
+
+
+plot (FMfarms)
+
+compare_means(FM_level_ppm ~ Sample_type,  data = texas2)
+my_comparisons <- list( c("reject", "accept"), c("reject", "bulk"), c("accept", "bulk") )
+
+FMfarms2 <- ggboxplot(texas2, x = "Sample_type", y = "FM_level_ppm", fill = "Sample_type") + 
+  stat_compare_means(comparisons = my_comparisons) + # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 9.5) + coord_cartesian(ylim = c(0, 10)) +
+  geom_hline(yintercept=2, linetype="dashed", color = "tomato2")  + 
+  labs(title = "Fumonisin Contamination Levels of Samples", x = "Sample Type", y = "Fumonisin Level (ppm)") +
+  theme(legend.position="none")
+  
+  #ggplot(data = texas2) + geom_boxplot(aes(x= Sample_type, y= FM_level_ppm )) + labs(title = "Fumonisin Level of Ghana samples", x = "Sample Type", y = "Fumonisin Level (ppm)") + theme(legend.position = c(0.2, 0.8)) + stat_compare_means(aes(x= Sample_type, y= FM_level_ppm))
+
+
+FM <- plot (FMfarms2) 
+#FMfarms <- ggplot(data = texas) + 
+ # geom_boxplot(aes(x= Farm_type, y= FM_ppm )) + labs(title = "Bulk Fuminisin Level of Ghana samples", x = "Farm Type", y = "Fumonisin Level (ppm)") + theme(legend.position = c(0.2, 0.8))
+
+
+#plot (FMfarms)
+
+#wilcox.test(x= subset(texas, subset = Farm_type == "Cleaning", select = "AF.ppb."), y= subset(texas, subset = Farm_type == "Non_cleaning", select = "AF.ppb."))
+
+```
+
+
+```{r}
+texas3 <- read.csv("Ghana_sorted_AF_box.csv", header = TRUE)
+
+
+compare_means(AF_level_ppb ~ Sample_type,  data = texas3)
+my_comparisons2 <- list( c("reject", "accept"), c("reject", "bulk"), c("accept", "bulk") )
+
+FMfarms3 <- ggboxplot(texas3, x = "Sample_type", y = "AF_level_ppb", fill = "Sample_type") + 
+  stat_compare_means(comparisons = my_comparisons2) + # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 105) + coord_cartesian(ylim = c(0, 110)) +
+  geom_hline(yintercept=15, linetype="dashed", color = "tomato2")  + 
+  labs(title = "Aflatoxin Contamination Levels of Samples", x = "Sample Type", y = "Aflatoxin Level (ppb)") +
+  theme(legend.position="none")
+  
+AF <- plot (FMfarms3) 
+
+```
+
+Make Figure 1
+
+```{r}
+
+Figure1 <- ggarrange(AF, FM, nrow = 1)
+
+
+```
+

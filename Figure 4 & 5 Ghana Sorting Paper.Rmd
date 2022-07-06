@@ -1,0 +1,427 @@
+---
+title: "Scatterplot and Linear correlation Ghana Sorting Data"
+author: "Ruben"
+date: "September 23, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/ruben/Desktop/Rstudio")
+
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(reshape2)
+```
+
+```{r}
+Ghana <- read.csv("Ghana_sorted_toxinFM.csv", header = TRUE)
+
+#create 1 to 1 line for graphs
+
+line_ratio <- read.csv("1_to_1_lines.csv", header = TRUE)
+
+
+```
+
+
+
+
+#Linear scatterplot Reject and Bulk
+
+```{r}
+eval = FALSE
+
+lm(data=Ghana, formula = AF_ppb_reject~AF_ppb_bulk)
+
+LM_reject_bulk <- lm(Ghana$AF_ppb_reject~Ghana$AF_ppb_bulk)
+
+summary(LM_reject_bulk)
+
+summary(LM_reject_bulk)$coefficients[,4]
+
+LM_reject_bulk$coefficients[[1]]
+
+lmp <- function (modelobject) {
+    if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
+    f <- summary(modelobject)$fstatistic
+    p <- pf(f[1],f[2],f[3],lower.tail=F)
+    attributes(p) <- NULL
+    return(p)
+}
+
+lmp(LM_reject_bulk)
+
+
+Ghana_linear_reject_bulk <- ggplot(data = Ghana, aes(AF_ppb_bulk, y=AF_ppb_reject)) + 
+geom_point() +
+geom_smooth(method=lm) + 
+scale_x_continuous("Bulk Aflatoxin Level (ppb)") + 
+scale_y_continuous("Reject Aflatoxin Level (ppb)")+ 
+geom_abline(intercept = 0, slope = 1, lty=2) + 
+coord_cartesian(ylim = c(0, 80), xlim = c(0, 65)) + 
+ggtitle("Aflatoxin") + 
+geom_label(aes(x = 55, y = 75), hjust = 0, 
+             label = paste(
+                                          "Intercept =",signif(LM_reject_bulk$coefficients[[1]],3 ),
+                                               " \nSlope =",signif(LM_reject_bulk$coefficients[[2]], 3),
+                                               " \nP =",signif(lmp(LM_reject_bulk), 3)))
+
+plot(Ghana_linear_reject_bulk)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(Ghana$AF_ppb_bulk, Ghana$AF_ppb_reject)
+
+```
+
+# For figure run from here!
+
+
+```{r}
+
+
+Plot_creation<-function(col1s, col2s, title, xtitle, ytitle, xposition, yposition,xmax, ymax, xmin, ymin){
+  
+
+  col1mod <- Ghana[[col1s]]
+  col2mod<-Ghana[[col2s]]
+  
+  LM_reject_bulk <- lm(formula = col2mod~col1mod)
+  
+  summary(LM_reject_bulk)
+  
+  summary(LM_reject_bulk)$coefficients[,4]
+  
+  LM_reject_bulk$coefficients[[1]]
+  
+  lmp <- function (modelobject) {
+      if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
+      f <- summary(modelobject)$fstatistic
+      p <- pf(f[1],f[2],f[3],lower.tail=F)
+      attributes(p) <- NULL
+      return(p)
+  }
+  
+  lmp(LM_reject_bulk)
+  
+  
+  Ghana_linear_reject_bulk <- ggplot(data = Ghana, aes_string(x=col1s, y=col2s)) + 
+  geom_point(size = 0.9) +
+  geom_smooth(method=lm) + 
+  scale_x_continuous(xtitle) + 
+  scale_y_continuous(ytitle)+ 
+  coord_cartesian(ylim = c(ymin, ymax), xlim = c(xmin, xmax)) + 
+  ggtitle(title) + 
+  geom_label(aes(x = xposition, y = yposition), size = 2.80 ,hjust = 0, 
+               label = paste(
+                                                 "Intercept =",signif(LM_reject_bulk$coefficients[[1]],3 ),
+                                                 " \nSlope =",signif(LM_reject_bulk$coefficients[[2]], 3),
+                                                 " \nP =",signif(lmp(LM_reject_bulk), 3))) 
+  
+  plot(Ghana_linear_reject_bulk)
+  return(Ghana_linear_reject_bulk)
+    
+}
+```
+
+# LM Reject and Bulk
+
+```{r}
+GhanaAF_reject_bulk  <- Plot_creation(col1s ="AF_ppb_bulk" , 
+               col2s = "AF_ppb_reject",
+              title = "Aflatoxin", 
+              xtitle = "Bulk Aflatoxin Level (ppb)",
+              ytitle = "Reject Aflatoxin (ppb)",
+              xposition = 54,
+              yposition = 68,
+              xmax = 70,
+              ymax = 80,
+              xmin = 0,
+              ymin = 0
+              ) + geom_abline(intercept = 0, slope = 1, lty=2) + theme(text = element_text(size = 10))
+
+AF2 <- plot(GhanaAF_reject_bulk)
+
+```
+# LM accept and Bulk
+
+```{r}
+GhanaAF_accept_bulk  <- Plot_creation(col1s ="AF_ppb_bulk" , 
+               col2s = "AF_ppb_accept",
+              title = "Aflatoxin", 
+              xtitle = "Bulk Aflatoxin Level (ppb)",
+              ytitle = "Accept Aflatoxin (ppb)",
+              xposition = 54,
+              yposition = 68,
+              xmax = 70,
+              ymax = 80,
+              xmin = 0,
+              ymin = 0
+              ) + geom_abline(intercept = 0, slope = 1, lty=2) + theme(text = element_text(size = 10))
+
+
+AF1 <- plot(GhanaAF_accept_bulk)
+
+```
+
+
+
+# LM Diference (accept-reject) and Bulk
+
+
+```{r}
+GhanaAF_dif_bulk  <- Plot_creation(col1s = "AF_ppb_bulk", 
+               col2s = "Diference_accept_reject_AF",
+              title = "Aflatoxin", 
+              xtitle = "Bulk Aflatoxin Level (ppb)",
+              ytitle = "Difference Aflatoxin Accept-Reject (ppb)",
+              xposition = 54,
+              yposition = 3.2,
+              xmax = 70,
+              ymax = 10,
+              xmin = 0,
+              ymin = -80
+              )  + geom_hline(yintercept=0, linetype="dashed", color = "tomato2") + theme(text = element_text(size = 10))
+
+
+AF3 <- plot(GhanaAF_dif_bulk)
+
+```
+
+
+#LM Reject and bulk FM
+
+```{r}
+
+GhanaFM_reject_bulk  <- Plot_creation(col1s ="FM_ppm_bulk" , 
+               col2s = "FM_ppm_reject",
+              title = "Fumonisin", 
+              xtitle = "Bulk Fumonisin Level (ppm)",
+              ytitle = "Reject Fumonisin (ppm)",
+              xposition = 4.6,
+              yposition = 7.25,
+              xmax = 6,
+              ymax = 8,
+              xmin = 0,
+              ymin = 0
+              ) + geom_abline(intercept = 0, slope = 1, lty=2) + theme(text = element_text(size = 10))
+
+
+FM2 <- plot(GhanaFM_reject_bulk)
+
+
+```
+
+
+#LM Accept and bulk FM
+
+```{r}
+
+GhanaFM_accept_bulk  <- Plot_creation(col1s ="FM_ppm_bulk" , 
+               col2s = "FM_ppm_accept",
+              title = "Fumonisin", 
+              xtitle = "Bulk Fumonisin Level (ppm)",
+              ytitle = "Accept Fumonisin (ppm)",
+              xposition = 4.6,
+              yposition = 7.25,
+              xmax = 6,
+              ymax = 8,
+              xmin = 0,
+              ymin = 0
+              ) + geom_abline(intercept = 0, slope = 1, lty=2) + theme(text = element_text(size = 10))
+
+
+FM1 <- plot(GhanaFM_accept_bulk)
+
+
+```
+
+#LM Diference (accept-reject) and bulk FM
+
+```{r}
+GhanaFM_dif_bulk  <- Plot_creation(col1s = "FM_ppm_bulk", 
+               col2s = "Diference_accept_reject_FM",
+              title = "Fumonisin", 
+              xtitle = "Bulk Fumonisin Level (ppm)",
+              ytitle = "Difference Fumonisin Accept-Reject (ppm)",
+              xposition = 4.6,
+              yposition = -1,
+              xmax = 6,
+              ymax = 0,
+              xmin = 0,
+              ymin = -8
+              )  + geom_hline(yintercept=0, linetype="dashed", color = "tomato2") + theme(text = element_text(size = 10))  
+
+
+FM3 <- plot(GhanaFM_dif_bulk)
+```
+
+
+# Create Figure 4
+
+```{r}
+
+Fig4 <- ggarrange(AF1, FM1, AF2, FM2, AF3, FM3,
+          ncol = 2, nrow = 3)
+
+Fig4
+```
+
+
+
+# FIG. 5 LM Mass percentage reject and Fraction Reject
+
+```{r}
+GhanaAF_mass_toxin  <- Plot_creation(col1s ="Reject_mass_perc" , 
+               col2s = "Fraction_reject_AF",
+              title = "Aflatoxin", 
+              xtitle = "Percent of Mass reject (%)",
+              ytitle = "Percent Aflatoxin removed (%)",
+              xposition = 0.28,
+              yposition = 0.15,
+              xmax = 0.4,
+              ymax = 1.00,
+              xmin = 0,
+              ymin = 0
+              ) + geom_abline(intercept = 0, slope = 1, lty=2) + theme(text = element_text(size = 10)) 
+
+
+AF1.1 <- plot(GhanaAF_mass_toxin)
+
+```
+
+# FIG. 5 LM Mass percentage reject and Fraction Reject
+
+```{r}
+GhanaAF_mass_bulk  <- Plot_creation(col1s ="AF_ppb_bulk" , 
+               col2s = "Weight_reject",
+              title = "Aflatoxin", 
+              xtitle = "Bulk Aflatoxin Level (ppb)",
+              ytitle = "Mass Removed (g)",
+              xposition = 53,
+              yposition = 40,
+              xmax = 70,
+              ymax = 60,
+              xmin = 0,
+              ymin = 0
+              )  + theme(text = element_text(size = 10)) 
+
+
+AF2.1 <- plot(GhanaAF_mass_bulk)
+
+```
+# FIG. 5 LM Mass percentage reject and Fraction Reject FM
+
+```{r}
+GhanaFM_mass_toxin  <- Plot_creation(col1s ="Reject_mass_perc" , 
+               col2s = "Fraction_reject_FM",
+              title = "Fumonisin", 
+              xtitle = "Percent of Mass reject (%)",
+              ytitle = "Percent Fumonisin removed (%)",
+              xposition = 0.28,
+              yposition = 0.15,
+              xmax = 0.4,
+              ymax = 1.00,
+              xmin = 0,
+              ymin = 0
+              ) + geom_abline(intercept = 0, slope = 1, lty=2) + theme(text = element_text(size = 10)) 
+
+
+FM1.1 <- plot(GhanaFM_mass_toxin)
+
+```
+
+# FIG. 5 LM Mass percentage reject and Fraction Reject FM
+
+```{r}
+GhanaFM_mass_bulk  <- Plot_creation(col1s ="FM_ppm_bulk" , 
+               col2s = "Weight_reject",
+              title = "Fumonisin", 
+              xtitle = "Bulk Fumonisin Level (ppm)",
+              ytitle = "Mass Removed (g)",
+              xposition = 4.3,
+              yposition = 40,
+              xmax = 6,
+              ymax = 60,
+              xmin = 0,
+              ymin = 0
+              )  + theme(text = element_text(size = 10)) 
+
+
+FM2.1 <- plot(GhanaFM_mass_bulk)
+
+```
+
+#Create Figure 5
+
+```{r}
+
+Fig5 <- ggarrange(AF1.1, FM1.1, AF2.1, FM2.1,
+          ncol = 2, nrow = 2)
+
+Fig5
+
+```
+
+
+#Boxplot mass percentage sorted and percetange of toxin reduced
+
+```{r}
+Ghana2 <- read.csv("Ghana_sorted_AF_1_masstest2.csv", header = TRUE)
+
+AFfarmsweight <- ggplot(data = Ghana2) + 
+  geom_boxplot(aes(x= Sample_type, y= perc_weight2 )) + labs(title = "Percentage of Sample Mass in Accept and Reject Stream after Sorting", x = "Sorted Sample", y = "Mass Sorted (%)") + theme(legend.position = c(0.2, 0.8)) + coord_cartesian(ylim = c(0, 1)) + theme(text = element_text(size = 10))
+
+#+ annotate("text", x = 0.6, y = 3, label = paste ("Mean ==", mean_d1), parse = TRUE) + annotate("text", x = 0.6, y = 2.8, label = paste ("Mode ==", mode_d1), parse = TRUE)
+
+
+MS <- plot (AFfarmsweight)
+
+```
+
+
+```{r}
+Ghana3 <- read.csv("Toxin_percentage_removal_ghana.csv", header = TRUE)
+
+AFfarmstoxinremoval <- ggplot(data = Ghana3) + 
+  geom_boxplot(aes(x= Sample_type, y= Perc_toxin_removed_AF)) + labs(title = "Percentage of Total Aflatoxin Fraction Removed by Sorting", x = "Sample Stream", y = "Aflatoxin removed in Reject Samples (%)") + theme(legend.position = c(0.2, 0.8)) + coord_cartesian(ylim = c(0, 1)) + theme(text = element_text(size = 10))
+
+#+ annotate("text", x = 0.6, y = 3, label = paste ("Mean ==", mean_d1), parse = TRUE) + annotate("text", x = 0.6, y = 2.8, label = paste ("Mode ==", mode_d1), parse = TRUE)
+
+
+MSAF <- plot (AFfarmstoxinremoval)
+```
+
+
+```{r}
+Ghana4 <- read.csv("Toxin_percentage_removal_ghana_FM.csv", header = TRUE)
+
+FMfarmstoxinremoval <- ggplot(data = Ghana4) + 
+  geom_boxplot(aes(x= Sample_type, y= Perc_toxin_removed_FM)) + labs(title = "Percentage of Total Fumonisin Fraction Removed by Sorting", x = "Sample Stream", y = "Fumonisin removed in Reject Samples (%)") + theme(legend.position = c(0.2, 0.8)) + coord_cartesian(ylim = c(0, 1)) + theme(text = element_text(size = 10))
+
+#+ annotate("text", x = 0.6, y = 3, label = paste ("Mean ==", mean_d1), parse = TRUE) + annotate("text", x = 0.6, y = 2.8, label = paste ("Mode ==", mode_d1), parse = TRUE)
+
+
+MSFM <- plot (FMfarmstoxinremoval)
+```
+
+#Make FIgure 3
+
+```{r}
+
+Fig3 <- ggarrange(MS, MSAF, MSFM, nrow = 1)
+
+Fig3
+
+```
+
+
+
+
+
+

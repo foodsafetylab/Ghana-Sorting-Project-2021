@@ -1,0 +1,372 @@
+---
+title: "FM Data Analysis Ghana Sorting"
+author: "Ruben"
+date: "October 4, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/ruben/Desktop/Rstudio")
+
+library(tidyverse)
+library(ggplot2)
+
+library(reshape2)
+library(gridExtra)
+library(data.table)
+library(patchwork)
+library(ggpubr)
+library(grid)
+library(ragg)
+```
+
+#Load Files
+
+```{r}
+GhanaFM <- read.csv("Ghana_sorted_toxinFM.csv", header = TRUE)
+
+```
+
+#Graph Reduction Accept and Reject FM
+
+```{r}
+data1 <- data.frame (x= GhanaFM$Sample_ID, y1 = GhanaFM$FM_ppm_accept, y2 = GhanaFM$FM_ppm_reject)
+
+
+datalist<-data1$x
+print(datalist)
+
+
+data_long1 <- melt(data1, id = "x")
+
+head(data_long1)
+
+
+
+ggp1FM <- ggplot(data_long1,  aes(x = factor(x, level = datalist), y = value, color = variable, shape = variable, show.legend = F))+  geom_point() + geom_line(aes(group = x), color = "black",arrow = arrow(length=unit(0.1,"cm"), ends="first", type = "closed")) +  labs(x = "Sample ID", y = "Fumonisin Level (ppm)", fill = "Fumonisin Type" ) + scale_color_manual( values = c("blue", "red"), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream")) + theme(axis.text.x = element_text(vjust = 0.5,angle = 90), text = element_text(size = 11), legend.position = c(0.85, 0.8)) + scale_shape_manual(values = c(16,17,4), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream")) + geom_hline(yintercept=2,  linetype="dashed", color = "tomato2") + ggtitle("Fumonisin levels of rejected and accepted streams after sorting") + coord_cartesian(ylim = c(0, 7)) + theme(text = element_text(size = 10))
+
+ggp1FM
+```
+
+#Graph Accept, Reject and Bulk
+
+```{r}
+data2 <- data.frame (x= GhanaFM$Sample_ID, y1 = GhanaFM$FM_ppm_accept, y2 = GhanaFM$FM_ppm_reject, y3= GhanaFM$FM_ppm_bulk)
+
+
+datalist2<-data2$x
+print(datalist2)
+
+data_long2 <- melt(data2, id = "x")
+
+head(data_long2)
+
+
+
+ggp2FM <- ggplot(data_long2,  aes(x = factor(x, level = datalist2), y = value, color = variable, shape = variable, show.legend = F))+  geom_point() +  labs(x = "Sample ID", y = "Fumonisin Level (ppm)", fill = "Fumonisin Type" ) + scale_color_manual( values = c("blue", "red","black"), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream", "Bulk Level")) + theme(axis.text.x = element_text(vjust = 0.5,angle = 90), text = element_text(size = 11), legend.position = c(0.85, 0.8)) + scale_shape_manual(values = c(16,17,2), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream", "Bulk Level")) + geom_hline(yintercept=2, linetype="dashed", color = "tomato2") + ggtitle("Fumonisin levels of rejected and accepted streams after sorting") + coord_cartesian(ylim = c(0, 7)) + theme(text = element_text(size = 10))
+
+ggp2FM
+
+
+
+
+```
+
+
+```{r}
+Ghana <- read.csv("Ghana_sorted_toxinAF.csv", header = TRUE)
+
+
+```
+
+
+```{r}
+data1AF <- data.frame (x= Ghana$Sample_ID, y1 = Ghana$AF_ppb_accept, y2 = Ghana$AF_ppb_reject)
+
+
+datalistAF<-data1AF$x
+print(datalistAF)
+
+#setDT(data1)
+
+
+data_long1AF <- melt(data1AF, id = "x")
+
+
+#data_long1 <- data1 %>% mutate (direction = ifelse(y2 - y1 > 0 , "up", "Down")) %>%  melt(id = c( "x", "direction"))
+
+head(data_long1AF)
+
+
+
+ggp1AF <- ggplot(data_long1AF, aes(x = factor(x, level = datalistAF), y = value, color = variable, shape = variable, show.legend = F, group = "x")) +  geom_point() + geom_line(aes(group = x), color = "black",arrow = arrow(length=unit(0.1,"cm"), ends="first", type = "closed")) +  labs(x = "Sample ID", y = "Aflatoxin Level (ppb)", fill = "Aflatoxin Type" ) + scale_color_manual( values = c("blue", "red"), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream")) + theme(axis.text.x = element_text(vjust = 0.5,angle = 90), text = element_text(size = 11), legend.position = c(0.85, 0.8)) + scale_shape_manual(values = c(17,4), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream"))+ geom_hline(yintercept=15, linetype="dashed", color = "tomato2") + coord_cartesian(ylim = c(0, 80))  + ggtitle("Aflatoxin levels of rejected and accepted streams after sorting") + theme(text = element_text(size = 10))
+
+#g1 <- ggplot(data_long1, aes(x=factor(x, level = datalist), y = value, color = variable, group = x )) + geom_point(size=4) + geom_path(aes(color = direction), arrow=arrow()) + labs(x = "Sample ID", y = "Aflaotxin Level (ppb)", fill = "Aflatoxin Type" )  + scale_shape_manual(values = c(17,4), name = "Aflatoxin Measurement",labels = c( "Accept Stream", "Reject Stream"))
+
+ggp1AF
+
+#g1
+
+
+# bulk, reject, accept levels, no arrows
+data2AF <- data.frame (x= Ghana$Sample_ID, y1 = Ghana$AF_ppb_accept, y2 = Ghana$AF_ppb_reject, y3= Ghana$AF_ppb_bulk)
+
+
+datalist2AF<-data2AF$x
+print(datalist2AF)
+
+#setDT(data1)
+
+
+data_long2AF <- melt(data2AF, id = "x")
+
+
+#data_long1 <- data1 %>% mutate (direction = ifelse(y2 - y1 > 0 , "up", "Down")) %>%  melt(id = c( "x", "direction"))
+
+head(data_long2AF)
+
+
+
+ggp2AF <- ggplot(data_long2AF, aes(x = factor(x, level = datalist2AF), y = value, color = variable, shape = variable, show.legend = F, group = "x")) +  geom_point()  +  labs(x = "Sample ID", y = "Aflatoxin Level (ppb)", fill = "Aflatoxin Type" ) + scale_color_manual( values = c("blue", "red","black"), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream","Bulk Level")) + theme(axis.text.x = element_text(vjust = 0.5,angle = 90), text = element_text(size = 11), legend.position = c(0.85, 0.8)) + scale_shape_manual(values = c(17,4,2), name = "Sorting Results",labels = c( "Accept Stream", "Reject Stream","Bulk Level"))+ geom_hline(yintercept=15, linetype="dashed", color = "tomato2") + ggtitle("Aflatoxin levels of rejected and accepted streams after sorting") + coord_cartesian(ylim = c(0, 80))+ theme(text = element_text(size = 10)) 
+
+#g1 <- ggplot(data_long1, aes(x=factor(x, level = datalist), y = value, color = variable, group = x )) + geom_point(size=4) + geom_path(aes(color = direction), arrow=arrow()) + labs(x = "Sample ID", y = "Aflaotxin Level (ppb)", fill = "Aflatoxin Type" )  + scale_shape_manual(values = c(17,4), name = "Aflatoxin Measurement",labels = c( "Accept Stream", "Reject Stream"))
+
+ggp2AF
+
+
+
+
+```
+
+#Make Figure 2 and S2
+
+```{r}
+
+Fig2 <- ggarrange(ggp1AF, ggp1FM, common.legend = FALSE,
+          nrow = 2)
+
+Fig2
+
+FigS2 <- ggarrange(ggp2AF, ggp2FM, common.legend = FALSE,
+          ncol = 1, nrow = 2)
+
+FigS2
+
+```
+
+
+#Linear Coreletation bulk and accept
+
+```{r}
+GhanaFM_linear_accept_bulk <- ggplot(data = GhanaFM, aes(FM_ppm_bulk, y=FM_ppm_accept)) + geom_point() + geom_smooth(method=lm) + geom_abline(intercept = 0, slope = 1, lty=2)  + scale_y_continuous("Accept Fumonisin Level (ppm)", limits=c(0,1)) +  ggtitle("Fumonisin") + stat_regline_equation(label.x=4, label.y=0.6) 
+
+#ggplot(data = GhanaFM, aes(FM_ppm_bulk, y=Diference_accept_reject_FM)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Bulk Fumonisin Level (ppm)") + scale_y_continuous("Diference Accept-Reject") + geom_hline(yintercept=0, linetype="dashed", color = "tomato2") + ggtitle("Fumonisin")
+
+
+#+ scale_y_continuous("Accept Fumonisin Level (ppm)") + geom_abline(intercept = 0, slope = 1, lty=2) + coord_cartesian(xlim = c(0, 6), ylim = c(0,0.7) ) + ggtitle("Fumonisin") + geom_ribbon(aes(ymin= lowerbound, ymax=upperbound, fill="blue"))
+
+
+plot(GhanaFM_linear_accept_bulk)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(GhanaFM$FM_ppm_bulk, GhanaFM$AF_ppb_accept)
+
+
+#Linear Model to see if prediction is statistically significant
+
+LM_accept_bulk_FM <- lm(GhanaFM$AF_ppb_accept ~ GhanaFM$FM_ppm_bulk)
+
+summary(LM_accept_bulk_FM)
+
+
+```
+
+
+#Linear Coreletation bulk and Reject
+
+```{r}
+GhanaFM_linear_reject_bulk <- ggplot(data = GhanaFM, aes(FM_ppm_bulk, y=FM_ppm_reject)) + geom_point() + geom_smooth(method=lm, se=TRUE) + scale_x_continuous("Bulk Fumonisin Level (ppm)") + scale_y_continuous("Reject Fumonisin Level (ppm)") + geom_abline(intercept = 0, slope = 1, lty=2) + ggtitle("Fumonisin") + stat_regline_equation(label.x=4, label.y=2) 
+
+plot(GhanaFM_linear_reject_bulk)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(GhanaFM$FM_ppm_bulk, GhanaFM$AF_ppb_reject)
+
+
+#Linear Model to see if prediction is statistically significant
+
+LM_reject_bulk_FM <- lm(GhanaFM$AF_ppb_reject ~ GhanaFM$FM_ppm_bulk)
+
+summary(LM_reject_bulk_FM)
+
+
+```
+#Linear Coreletation bulk and Difference Accept-Reject
+
+```{r}
+GhanaFM_linear_dif_bulk <- ggplot(data = GhanaFM, aes(FM_ppm_bulk, y=Diference_accept_reject_FM)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Bulk Fumonisin Level (ppm)") + scale_y_continuous("Diference Accept-Reject") + geom_hline(yintercept=0, linetype="dashed", color = "tomato2") + ggtitle("Fumonisin") + stat_regline_equation(label.x=4, label.y=2) 
+
+plot(GhanaFM_linear_dif_bulk)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(GhanaFM$FM_ppm_bulk, GhanaFM$Diference_accept_reject_FM)
+
+
+#Linear Model to see if prediction is statistically significant
+
+LM_dif_bulk_FM <- lm(GhanaFM$Diference_accept_reject_FM ~ GhanaFM$FM_ppm_bulk)
+
+summary(LM_dif_bulk_FM)
+
+
+```
+
+#Linear scatterplot Difference and Reject
+
+```{r}
+#GhanaFM_linear_dif_reject <- ggplot(data = GhanaFM, aes(FM_ppm_reject, y=Diference_accept_reject_FM)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Reject Fumonisin Level (ppm)") + scale_y_continuous("Diference Accept-Reject") + geom_hline(yintercept=0, linetype="dashed", color = "tomato2") + ggtitle("Fumonisin")
+
+#plot(GhanaFM_linear_dif_reject)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+#cor(GhanaFM$FM_ppm_reject, GhanaFM$Diference_accept_reject_FM)
+
+
+#Linear Model to see if prediction is statistically significant
+
+#LM_dif_reject_FM <- lm(GhanaFM$Diference_accept_reject_FM ~ GhanaFM$FM_ppm_reject)
+
+#summary(LM_dif_reject_FM)
+
+
+```
+
+
+
+#Linear scatterplot Difference and Reject
+
+```{r}
+#GhanaFM_linear_dif_accept <- ggplot(data = GhanaFM, aes(FM_ppm_accept, y=Diference_accept_reject_FM)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Accept Fumonisin Level (ppm)") + scale_y_continuous("Diference Accept-Reject") + geom_hline(yintercept=0, linetype="dashed", color = "tomato2") + ggtitle("Fumonisin")
+
+#plot(GhanaFM_linear_dif_accept)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+#cor(GhanaFM$FM_ppm_accept, GhanaFM$Diference_accept_reject_FM)
+
+
+#Linear Model to see if prediction is statistically significant
+
+#LM_dif_accept_FM <- lm(GhanaFM$Diference_accept_reject_FM ~ GhanaFM$FM_ppm_accept)
+
+#summary(LM_dif_accept_FM)
+
+
+```
+
+#Linear Co-relation  Accept and Reject
+
+```{r}
+#Ghana_FM_accept_reject<- ggplot(data = GhanaFM, aes(FM_ppm_accept, y=FM_ppm_reject)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Accept Fumonisin Level (ppm)") + scale_y_continuous("Reject Fumonisin Level (ppm)") + geom_abline(intercept = 0, slope = 1, lty=2) + ggtitle("Fumonisin")
+
+#plot(Ghana_FM_accept_reject)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+#cor(GhanaFM$FM_ppm_accept, GhanaFM$FM_ppm_reject)
+
+
+#Linear Model to see if prediction is statistically significant
+
+#LM_reject_accept_FM <- lm(GhanaFM$FM_ppm_reject ~ GhanaFM$FM_ppm_accept)
+
+#summary(LM_reject_accept_FM)
+
+
+
+```
+
+#Linear Co-releation  Mass percentage reject and Fraction Reject FM
+
+```{r}
+Ghana_FM_mass_frac<- ggplot(data = GhanaFM, aes(Reject_mass_perc, y=Fraction_reject_FM)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Perc Mass Rejected (%)") + scale_y_continuous("Percent Fumonisin removed (%)") + geom_abline(intercept = 0, slope = 1, lty=2) + ggtitle("Fumonisin") + stat_regline_equation(label.x=0.25, label.y=0.6) + stat_cor(aes(label=..rr.label..), label.x=0.25, label.y=0.5)
+
+plot(Ghana_FM_mass_frac)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(GhanaFM$Reject_mass_perc, GhanaFM$Fraction_reject_FM)
+
+
+#Linear Model to see if prediction is statistically significant
+
+LM_mass_frac_FM <- lm(GhanaFM$Fraction_reject_FM ~ GhanaFM$Reject_mass_perc)
+
+summary(LM_mass_frac_FM)
+
+```
+#Boxplot Toxin removed
+
+```{r}
+GhanaFM2 <- read.csv("Toxin_percentage_removal_ghana_FM.csv", header = TRUE)
+
+FMfarmstoxinremoval <- ggplot(data = GhanaFM2) + 
+  geom_boxplot(aes(x= Sample_type, y= Perc_toxin_removed_FM)) + labs(title = "Percentage of Total Fumonisin Removed by Sorting", x = "Sample Stream", y = "Fumonisin removed in Reject Samples (%)") + theme(legend.position = c(0.2, 0.8)) + coord_cartesian(ylim = c(0, 1)) 
+
+#+ annotate("text", x = 0.6, y = 3, label = paste ("Mean ==", mean_d1), parse = TRUE) + annotate("text", x = 0.6, y = 2.8, label = paste ("Mode ==", mode_d1), parse = TRUE)
+
+
+plot (FMfarmstoxinremoval)
+```
+
+
+#Boxplot Linear coreleation FM mass (G) vs bulk level FM
+
+```{r}
+Ghana_FM_mass_bulk<- ggplot(data = GhanaFM, aes(FM_ppm_bulk, y=Weight_reject)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Bulk Fumonisin Level (ppm)") + scale_y_continuous("Mass Removed (g)") +  ggtitle("Fumonisin") + stat_regline_equation(label.x=4, label.y=40)
+
+#add R^2 to plot stat_regline_equation(label.x=4, label.y=2) + stat_cor(aes(label=..rr.label..), label.x=4, label.y=1.5)
+
+plot(Ghana_FM_mass_bulk)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(GhanaFM$FM_ppm_bulk, GhanaFM$Weight_reject)
+
+
+#Linear Model to see if prediction is statistically significant
+
+LM_mass_bulk_FM <- lm(GhanaFM$Weight_reject ~ GhanaFM$FM_ppm_bulk)
+
+summary(LM_mass_bulk_FM)
+```
+
+
+#Linear co-relation mass rejected vs AF bulk
+
+```{r}
+Ghana_FM_mass_bulkAF<- ggplot(data = GhanaFM, aes(AF_ppb_bulk, y=Weight_reject)) + geom_point() + geom_smooth(method=lm) + scale_x_continuous("Bulk Aflatoxin Level (ppb)") + scale_y_continuous("Mass Removed (g)") + ggtitle("Aflatoxin") + stat_regline_equation(label.x=50, label.y=40)
+
+
+plot(Ghana_FM_mass_bulkAF)
+
+#Correlate the 2 data points. The correlation coefficient is a number between 1 and -1, The magnitude of the number indicates the strength of the linear relationship. The sign corresponds to the direction of that relationship. A correlation coefficient of -1 indicates a near perfect negatively correlated linear relationship.
+
+cor(GhanaFM$AF_ppb_bulk, GhanaFM$Weight_reject)
+
+
+#Linear Model to see if prediction is statistically significant
+
+LM_mass_bulkAF<- lm(GhanaFM$Weight_reject ~ GhanaFM$AF_ppb_bulk)
+
+summary(LM_mass_bulkAF)
+```
+

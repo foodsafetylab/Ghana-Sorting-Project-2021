@@ -1,0 +1,292 @@
+---
+title: "Stats Ghana Sorting"
+author: "Ruben"
+date: "August 12, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(ggpubr)
+
+```
+
+
+```{r}
+setwd("C:/Users/ruben/Desktop/Rstudio")
+
+Ghana1 <- read.csv("Ghana_bulk_AF_farms.csv", header = TRUE) 
+#%>% select(-X) %>% mutate (Farm = factor(Farm, ordered = TRUE))
+
+glimpse(Ghana1)
+
+#class(Ghana1$AF_level_logppb)
+
+#Ghana1$AF_level_logppb <- as.numeric(as.character(Ghana1$AF_level_logppb))
+
+
+```
+
+```{r}
+
+Ghana1 %>% group_by(Farm) %>% summarise( count_Farm = n(), 
+                                         mean_AF_level_ppb =  mean(AF_level_ppb), 
+                                         sd_AF_level_ppb = sd(AF_level_ppb))
+
+
+```
+
+
+```{r}
+AF <- ggplot(Ghana1, aes(x = Farm,
+                   y = AF_level_ppb, 
+                   fill = Farm)) + 
+  geom_boxplot(aes(x= Farm, 
+                   y= AF_level_ppb )) + 
+  labs(title = "Bulk Aflatoxin Levels of Ghana Farms",
+       x = "Farm",
+       y = "Bulk Aflatoxin Level (ppb)") + 
+  theme(legend.position="none") + 
+  coord_cartesian(ylim = c(0, 100)) + 
+  geom_hline(yintercept=15, 
+             linetype="dashed", 
+             color = "tomato2") + 
+  scale_fill_brewer(palette="BuPu") + theme(text = element_text(size = 10)) 
+
+AF
+```
+
+
+
+```{r}
+anova_one_way <- aov(AF_level_ppb~Farm, 
+                     data = Ghana1)
+
+summary(anova_one_way)
+
+kruskal.test(AF_level_ppb~Farm, 
+             data = Ghana1)
+
+```
+
+```{r}
+TukeyHSD(anova_one_way)
+
+
+Tukey_1 <- TukeyHSD(anova_one_way)
+
+plot(Tukey_1)
+
+```
+```{r}
+Ghana2 <- read.csv("Ghana_bulk_FM_farms.csv", header = TRUE) 
+#%>% select(-X) %>% mutate (Farm = factor(Farm, ordered = TRUE))
+
+glimpse(Ghana2)
+
+#class(Ghana1$AF_level_logppb)
+
+#Ghana1$AF_level_logppb <- as.numeric(as.character(Ghana1$AF_level_logppb))
+
+
+```
+
+```{r}
+
+Ghana2 %>% group_by(Farm) %>% summarise( count_Farm = n(), 
+                                         mean_FM_level_ppm =  mean(FM_level_ppm), 
+                                         sd_FM_level_ppm = sd(FM_level_ppm))
+
+
+```
+
+
+```{r}
+FM <- ggplot(Ghana2, aes(x = Farm,
+                   y = FM_level_ppm, 
+                   fill = Farm)) + 
+  geom_boxplot(aes(x= Farm, 
+                   y= FM_level_ppm )) + 
+  labs(title = "Bulk Fumonisin Levels of Ghana Farms",
+       x = "Farm",
+       y = "Bulk Fumonisin Level (ppm)") + 
+  theme(legend.position="none") + 
+  coord_cartesian(ylim = c(0, 6)) + 
+  geom_hline(yintercept=2, 
+             linetype="dashed", 
+             color = "tomato2") + 
+  scale_fill_brewer(palette="BuPu") + theme(text = element_text(size = 10)) 
+
+FM
+```
+
+#Make Figure S1
+
+```{r}
+FigS1 <- ggarrange(AF, FM,nrow = 1)
+
+FigS1
+```
+
+
+
+
+```{r}
+anova_one_way2 <- aov(FM_level_ppm~Farm, data = Ghana2)
+summary(anova_one_way2)
+
+kruskal.test(FM_level_ppm~Farm, data = Ghana2)
+```
+
+```{r}
+TukeyHSD(anova_one_way2)
+
+
+Tukey_2 <- TukeyHSD(anova_one_way2)
+
+plot(Tukey_2)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+#normality test bulk
+
+Ghanabulklog <- read.csv("Ghana_sorted_AFlog_bulk.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghanabulklog)
+
+shapiro.test(Ghanabulklog$AF_level_logppb)
+
+```
+
+```{r}
+#normality test accept
+
+Ghanaacceptlog <- read.csv("Ghana_sorted_AFlog_accept.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghanaacceptlog)
+
+shapiro.test(Ghanaacceptlog$AF_level_logppb)
+
+```
+
+
+```{r}
+#normality test reject
+
+Ghanarejectlog <- read.csv("Ghana_sorted_AFlog_reject.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghanarejectlog)
+
+shapiro.test(Ghanarejectlog$AF_level_logppb)
+
+```
+
+```{r}
+setwd("C:/Users/ruben/Desktop/Rstudio")
+
+Ghana2 <- read.csv("Ghana_sorted_AF.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghana2)
+
+#class(Ghana1$AF_level_logppb)
+
+#Ghana1$AF_level_logppb <- as.numeric(as.character(Ghana1$AF_level_logppb))
+
+
+```
+
+```{r}
+
+Ghana2 %>% group_by(Sample_type) %>% summarise( count_Sample_type = n(), mean_AF_level_ppb =  mean(AF_level_ppb), sd_AF_level_ppb = sd(AF_level_ppb))
+
+
+```
+
+
+```{r}
+ggplot(Ghana2, aes(x = Sample_type, y = AF_level_ppb, fill = Sample_type)) +
+    geom_boxplot(aes(x= Sample_type, y= AF_level_ppb )) + labs(title = "Aflatoxin Level of Ghana samples", x = "Sample Type", y = "Aflatoxin Level (ppb)") + theme(legend.position="none") + coord_cartesian(ylim = c(0, 80)) + geom_hline(yintercept=20, linetype="dashed", color = "tomato2") + scale_fill_brewer(palette="BuPu")
+```
+
+
+
+```{r}
+anova_one_way2 <- aov(AF_level_ppb~Sample_type, data = Ghana2)
+summary(anova_one_way2)
+```
+
+
+```{r}
+kruskal.test(AF_level_ppb~Sample_type, data = Ghana2)
+
+
+```
+
+
+```{r}
+TukeyHSD(anova_one_way2)
+```
+
+```{r}
+#normality test bulk
+
+Ghanabulk <- read.csv("Ghana_sorted_AF_bulk.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghanabulk)
+
+shapiro.test(Ghanabulk$AF_level_ppb)
+
+```
+
+```{r}
+#normality test accept
+
+Ghanaaccept <- read.csv("Ghana_sorted_AF_accept.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghanaaccept)
+
+shapiro.test(Ghanaaccept$AF_level_ppb)
+
+```
+
+
+```{r}
+#normality test reject
+
+Ghanareject <- read.csv("Ghana_sorted_AF_reject.csv", header = TRUE) %>% select(-X) %>% mutate (Sample_type = factor(Sample_type, ordered = TRUE))
+
+glimpse(Ghanareject)
+
+shapiro.test(Ghanareject$AF_level_ppb)
+
+```
+
